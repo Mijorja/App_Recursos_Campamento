@@ -30,10 +30,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
   Future<void> fetchYearsAndRecursos() async {
     setState(() => loading = true);
     try {
-      // primero traemos los años
       final years = await ApiService.getYears();
-
-      // después traemos los recursos
       final data = await ApiService.getRecursos(
         tipo: "actividad",
         anio: selectedAnio,
@@ -45,6 +42,9 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
 
       setState(() {
         availableYears = years;
+        if (selectedAnio == null && years.isNotEmpty) {
+          selectedAnio = years.first; // inicializa con el más reciente
+        }
         recursos = data;
         loading = false;
       });
@@ -93,7 +93,6 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
       ),
       body: Column(
         children: [
-          // 🔍 Buscador
           Padding(
             padding: const EdgeInsets.all(8),
             child: TextField(
@@ -110,7 +109,6 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
               },
             ),
           ),
-          // Filtros
           Padding(
             padding: const EdgeInsets.all(8),
             child: Wrap(
@@ -129,7 +127,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                   },
                 ),
                 DropdownButton<String>(
-                  hint: const Text("Tipo"),
+                  hint: const Text("Momento"),
                   value: selectedMomento,
                   items: momentos
                       .map((m) =>
@@ -143,7 +141,6 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
               ],
             ),
           ),
-          // Lista de recursos
           Expanded(
             child: loading
                 ? const Center(child: CircularProgressIndicator())

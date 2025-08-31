@@ -13,13 +13,10 @@ class DinamicasScreen extends StatefulWidget {
 
 class _DinamicasScreenState extends State<DinamicasScreen> {
   int? selectedAnio;
-  String? selectedGrupo;
   String searchQuery = "";
   List<Recurso> recursos = [];
   List<int> availableYears = [];
   bool loading = true;
-
-  final grupos = ["Pequeños", "Medianos", "Mayores"];
 
   @override
   void initState() {
@@ -30,14 +27,10 @@ class _DinamicasScreenState extends State<DinamicasScreen> {
   Future<void> fetchYearsAndRecursos() async {
     setState(() => loading = true);
     try {
-      // Traemos los años de dinámicas
       final years = await ApiService.getYearsDinamicas();
-
-      // Traemos las dinámicas
       final data = await ApiService.getRecursos(
         tipo: "dinamica",
         anio: selectedAnio,
-        grupo: selectedGrupo,
         q: searchQuery.isNotEmpty ? searchQuery : null,
         page: 1,
         limit: 50,
@@ -45,6 +38,9 @@ class _DinamicasScreenState extends State<DinamicasScreen> {
 
       setState(() {
         availableYears = years;
+        if (selectedAnio == null && years.isNotEmpty) {
+          selectedAnio = years.first; // inicializa con el más reciente
+        }
         recursos = data;
         loading = false;
       });
@@ -62,7 +58,6 @@ class _DinamicasScreenState extends State<DinamicasScreen> {
       final data = await ApiService.getRecursos(
         tipo: "dinamica",
         anio: selectedAnio,
-        grupo: selectedGrupo,
         q: searchQuery.isNotEmpty ? searchQuery : null,
         page: 1,
         limit: 50,
@@ -93,7 +88,6 @@ class _DinamicasScreenState extends State<DinamicasScreen> {
       ),
       body: Column(
         children: [
-          // 🔍 Buscador
           Padding(
             padding: const EdgeInsets.all(8),
             child: TextField(
@@ -110,11 +104,10 @@ class _DinamicasScreenState extends State<DinamicasScreen> {
               },
             ),
           ),
-          // Filtros
           Padding(
             padding: const EdgeInsets.all(8),
             child: Wrap(
-              spacing: 15,
+              spacing: 16,
               runSpacing: 8,
               children: [
                 DropdownButton<int>(
@@ -128,21 +121,9 @@ class _DinamicasScreenState extends State<DinamicasScreen> {
                     fetchRecursos();
                   },
                 ),
-                DropdownButton<String>(
-                  hint: const Text("Grupo"),
-                  value: selectedGrupo,
-                  items: grupos
-                      .map((g) => DropdownMenuItem(value: g, child: Text(g)))
-                      .toList(),
-                  onChanged: (v) {
-                    setState(() => selectedGrupo = v);
-                    fetchRecursos();
-                  },
-                ),
               ],
             ),
           ),
-          // Lista de recursos
           Expanded(
             child: loading
                 ? const Center(child: CircularProgressIndicator())

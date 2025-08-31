@@ -64,7 +64,7 @@ class ApiService {
   }
 
   static Future<List<int>> getYears() async {
-    final uri = Uri.parse("$baseUrl/recursos/years");
+    final uri = Uri.parse("$baseUrl/years");
     final response = await http.get(uri);
 
     if (response.statusCode == 200) {
@@ -76,7 +76,7 @@ class ApiService {
   }
 
   static Future<List<int>> getYearsDinamicas() async {
-    final uri = Uri.parse("$baseUrl/recursos/years-dinamicas");
+    final uri = Uri.parse("$baseUrl/years-dinamicas");
     final response = await http.get(uri);
 
     if (response.statusCode == 200) {
