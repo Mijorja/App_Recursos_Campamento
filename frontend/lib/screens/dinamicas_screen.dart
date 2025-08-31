@@ -13,10 +13,14 @@ class DinamicasScreen extends StatefulWidget {
 
 class _DinamicasScreenState extends State<DinamicasScreen> {
   int? selectedAnio;
+  String? selectedGrupo;
   String searchQuery = "";
   List<Recurso> recursos = [];
   List<int> availableYears = [];
   bool loading = true;
+
+  // lista de grupos
+  final grupos = ["Pequeños", "Medianos", "Mayores"];
 
   @override
   void initState() {
@@ -31,6 +35,7 @@ class _DinamicasScreenState extends State<DinamicasScreen> {
       final data = await ApiService.getRecursos(
         tipo: "dinamica",
         anio: selectedAnio,
+        grupo: selectedGrupo, // ✅ añadido
         q: searchQuery.isNotEmpty ? searchQuery : null,
         page: 1,
         limit: 50,
@@ -58,6 +63,7 @@ class _DinamicasScreenState extends State<DinamicasScreen> {
       final data = await ApiService.getRecursos(
         tipo: "dinamica",
         anio: selectedAnio,
+        grupo: selectedGrupo, // ✅ añadido
         q: searchQuery.isNotEmpty ? searchQuery : null,
         page: 1,
         limit: 50,
@@ -118,6 +124,17 @@ class _DinamicasScreenState extends State<DinamicasScreen> {
                       .toList(),
                   onChanged: (v) {
                     setState(() => selectedAnio = v);
+                    fetchRecursos();
+                  },
+                ),
+                DropdownButton<String>(
+                  hint: const Text("Grupo"),
+                  value: selectedGrupo,
+                  items: grupos
+                      .map((g) => DropdownMenuItem(value: g, child: Text(g)))
+                      .toList(),
+                  onChanged: (v) {
+                    setState(() => selectedGrupo = v);
                     fetchRecursos();
                   },
                 ),
