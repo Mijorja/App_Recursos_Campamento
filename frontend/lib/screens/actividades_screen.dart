@@ -42,9 +42,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
 
       setState(() {
         availableYears = years;
-        if (selectedAnio == null && years.isNotEmpty) {
-          selectedAnio = years.first; // inicializa con el más reciente
-        }
+        selectedAnio = null;
         recursos = data;
         loading = false;
       });
