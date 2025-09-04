@@ -125,7 +125,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                   },
                 ),
                 DropdownButton<String>(
-                  hint: const Text("Momento"),
+                  hint: const Text("Tipo"),
                   value: selectedMomento,
                   items: momentos
                       .map((m) =>
