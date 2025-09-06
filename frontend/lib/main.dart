@@ -71,7 +71,7 @@ class _SplashWrapperState extends State<SplashWrapper> {
     await Hive.initFlutter();
     await Hive.openBox('favoritos');
 
-    await Future.delayed(const Duration(seconds: 5)); // simula carga
+    await Future.delayed(const Duration(seconds: 4)); // simula carga
 
     if (!mounted) return;
 
