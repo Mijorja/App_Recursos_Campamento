@@ -10,8 +10,17 @@ import '../screens/detalle_recurso_screen.dart';
 
 class ResourceScreen extends StatelessWidget {
   final List<Recurso> recursos;
+  final ScrollController? controller;
+  final bool loading;
+  final bool hasMore;
 
-  const ResourceScreen({super.key, required this.recursos});
+  const ResourceScreen({
+    super.key,
+    required this.recursos,
+    this.controller,
+    this.loading = false,
+    this.hasMore = false,
+  });
 
   Future<void> _downloadFile(String url, String filename) async {
     final dir = await getApplicationDocumentsDirectory();
@@ -19,7 +28,7 @@ class ResourceScreen extends StatelessWidget {
     final response = await http.get(Uri.parse(url));
     final file = File(filePath);
     await file.writeAsBytes(response.bodyBytes);
-    // Puedes mostrar un Snackbar o diálogo indicando que se descargó
+    // Aquí puedes mostrar un Snackbar indicando que se descargó
   }
 
   void _shareFile(String url) {
@@ -30,50 +39,63 @@ class ResourceScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final favoritosProvider = context.watch<FavoritosProvider>();
 
-    return ListView.builder(
-      itemCount: recursos.length,
-      itemBuilder: (context, index) {
-        final recurso = recursos[index];
-        final esFavorito = favoritosProvider.esFavorito(recurso);
+    if (recursos.isEmpty && !loading) {
+      return const Center(child: Text("No hay recursos disponibles"));
+    }
 
-        return Card(
-          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          elevation: 4,
-          child: ListTile(
-            leading: const Icon(Icons.insert_drive_file),
-            title: Text(recurso.titulo),
-            subtitle: recurso.descripcion != null ? Text(recurso.descripcion!) : null,
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    esFavorito ? Icons.favorite : Icons.favorite_border,
-                    color: esFavorito ? Colors.red : Colors.grey,
+    return ListView.builder(
+      controller: controller,
+      itemCount: recursos.length + (hasMore || loading ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index < recursos.length) {
+          final recurso = recursos[index];
+          final esFavorito = favoritosProvider.esFavorito(recurso);
+
+          return Card(
+            margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            elevation: 4,
+            child: ListTile(
+              leading: const Icon(Icons.insert_drive_file),
+              title: Text(recurso.titulo),
+              subtitle: recurso.descripcion != null ? Text(recurso.descripcion!) : null,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      esFavorito ? Icons.favorite : Icons.favorite_border,
+                      color: esFavorito ? Colors.red : Colors.grey,
+                    ),
+                    onPressed: () => favoritosProvider.toggleFavorito(recurso),
                   ),
-                  onPressed: () => favoritosProvider.toggleFavorito(recurso),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.share),
-                  onPressed: () => _shareFile(recurso.fullUrl),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.download),
-                  onPressed: () => _downloadFile(recurso.fullUrl, recurso.titulo),
-                ),
-              ],
+                  IconButton(
+                    icon: const Icon(Icons.share),
+                    onPressed: () => _shareFile(recurso.fullUrl),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.download),
+                    onPressed: () => _downloadFile(recurso.fullUrl, recurso.titulo),
+                  ),
+                ],
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => DetalleRecursoScreen(recurso: recurso),
+                  ),
+                );
+              },
             ),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => DetalleRecursoScreen(recurso: recurso),
-                ),
-              );
-            },
-          ),
-        );
+          );
+        } else {
+          // 👇 Loader al final de la lista
+          return const Padding(
+            padding: EdgeInsets.all(16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
       },
     );
   }

@@ -29,7 +29,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
   void initState() {
     super.initState();
     fetchYearsAndRecursos();
-    
+
     // Listener para detectar cuando llegamos al final
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >=
@@ -41,11 +41,13 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
     });
   }
 
+
   Future<void> fetchYearsAndRecursos() async {
     setState(() {
       loading = true;
       currentPage = 1;
       hasMore = true;
+      recursos.clear();
     });
 
     try {
@@ -61,7 +63,6 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
 
       setState(() {
         availableYears = years;
-        selectedAnio = null;
         recursos = data;
         loading = false;
         hasMore = data.length == 50;
@@ -74,9 +75,10 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
     }
   }
 
+  /// Carga más recursos (scroll infinito)
   Future<void> fetchMoreRecursos() async {
     if (!hasMore) return;
-    
+
     setState(() => loading = true);
 
     try {
@@ -116,6 +118,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
       ),
       body: Column(
         children: [
+          // Barra de búsqueda
           Padding(
             padding: const EdgeInsets.all(8),
             child: TextField(
@@ -128,10 +131,11 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
               ),
               onSubmitted: (value) {
                 setState(() => searchQuery = value);
-                fetchMoreRecursos();
+                fetchYearsAndRecursos();
               },
             ),
           ),
+          // Filtros
           Padding(
             padding: const EdgeInsets.all(8),
             child: Wrap(
@@ -146,11 +150,11 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                       .toList(),
                   onChanged: (v) {
                     setState(() => selectedAnio = v);
-                    fetchMoreRecursos();
+                    fetchYearsAndRecursos();
                   },
                 ),
                 DropdownButton<String>(
-                  hint: const Text("Tipo"),
+                  hint: const Text("Momento"),
                   value: selectedMomento,
                   items: momentos
                       .map((m) =>
@@ -158,16 +162,20 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                       .toList(),
                   onChanged: (v) {
                     setState(() => selectedMomento = v);
-                    fetchMoreRecursos();
+                    fetchYearsAndRecursos();
                   },
                 ),
               ],
             ),
           ),
+          // Lista con scroll infinito
           Expanded(
-            child: loading
-                ? const Center(child: CircularProgressIndicator())
-                : ResourceScreen(recursos: recursos),
+            child: ResourceScreen(
+              recursos: recursos,
+              controller: _scrollController,
+              loading: loading,
+              hasMore: hasMore,
+            ),
           ),
         ],
       ),

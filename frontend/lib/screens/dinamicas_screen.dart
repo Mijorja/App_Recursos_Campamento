@@ -46,6 +46,7 @@ class _DinamicasScreenState extends State<DinamicasScreen> {
       loading = true;
       currentPage = 1;
       hasMore = true;
+      recursos.clear();
     });
 
     try {
@@ -80,8 +81,9 @@ class _DinamicasScreenState extends State<DinamicasScreen> {
     if (!hasMore) return;
 
     setState(() => loading = true);
-    
+
     try {
+      currentPage++;
       final data = await ApiService.getRecursos(
         tipo: "dinamica",
         anio: selectedAnio,
@@ -117,6 +119,7 @@ class _DinamicasScreenState extends State<DinamicasScreen> {
       ),
       body: Column(
         children: [
+          // Barra de búsqueda
           Padding(
             padding: const EdgeInsets.all(8),
             child: TextField(
@@ -129,10 +132,11 @@ class _DinamicasScreenState extends State<DinamicasScreen> {
               ),
               onSubmitted: (value) {
                 setState(() => searchQuery = value);
-                fetchMoreRecursos();
+                fetchYearsAndRecursos();
               },
             ),
           ),
+          // Filtros
           Padding(
             padding: const EdgeInsets.all(8),
             child: Wrap(
@@ -147,7 +151,7 @@ class _DinamicasScreenState extends State<DinamicasScreen> {
                       .toList(),
                   onChanged: (v) {
                     setState(() => selectedAnio = v);
-                    fetchMoreRecursos();
+                    fetchYearsAndRecursos();
                   },
                 ),
                 DropdownButton<String>(
@@ -158,16 +162,19 @@ class _DinamicasScreenState extends State<DinamicasScreen> {
                       .toList(),
                   onChanged: (v) {
                     setState(() => selectedGrupo = v);
-                    fetchMoreRecursos();
+                    fetchYearsAndRecursos();
                   },
                 ),
               ],
             ),
           ),
           Expanded(
-            child: loading
-                ? const Center(child: CircularProgressIndicator())
-                : ResourceScreen(recursos: recursos),
+            child: ResourceScreen(
+              recursos: recursos,
+              controller: _scrollController,
+              loading: loading,
+              hasMore: hasMore,
+            ),
           ),
         ],
       ),
