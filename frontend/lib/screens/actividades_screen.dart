@@ -19,16 +19,35 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
   List<int> availableYears = [];
   bool loading = true;
 
+  int currentPage = 1;
+  bool hasMore = true;
+  final ScrollController _scrollController = ScrollController();
+
   final momentos = ["Mañana", "Tarde", "Velada", "Olimpiada"];
 
   @override
   void initState() {
     super.initState();
     fetchYearsAndRecursos();
+    
+    // Listener para detectar cuando llegamos al final
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels >=
+              _scrollController.position.maxScrollExtent - 200 &&
+          !loading &&
+          hasMore) {
+        fetchMoreRecursos();
+      }
+    });
   }
 
   Future<void> fetchYearsAndRecursos() async {
-    setState(() => loading = true);
+    setState(() {
+      loading = true;
+      currentPage = 1;
+      hasMore = true;
+    });
+
     try {
       final years = await ApiService.getYears();
       final data = await ApiService.getRecursos(
@@ -36,7 +55,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
         anio: selectedAnio,
         momento: selectedMomento,
         q: searchQuery.isNotEmpty ? searchQuery : null,
-        page: 1,
+        page: currentPage,
         limit: 50,
       );
 
@@ -45,6 +64,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
         selectedAnio = null;
         recursos = data;
         loading = false;
+        hasMore = data.length == 50;
       });
     } catch (e) {
       setState(() => loading = false);
@@ -54,20 +74,25 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
     }
   }
 
-  Future<void> fetchRecursos() async {
+  Future<void> fetchMoreRecursos() async {
+    if (!hasMore) return;
+    
     setState(() => loading = true);
+
     try {
+      currentPage++;
       final data = await ApiService.getRecursos(
         tipo: "actividad",
         anio: selectedAnio,
         momento: selectedMomento,
         q: searchQuery.isNotEmpty ? searchQuery : null,
-        page: 1,
+        page: currentPage,
         limit: 50,
       );
       setState(() {
-        recursos = data;
+        recursos.addAll(data);
         loading = false;
+        hasMore = data.length == 50;
       });
     } catch (e) {
       setState(() => loading = false);
@@ -103,7 +128,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
               ),
               onSubmitted: (value) {
                 setState(() => searchQuery = value);
-                fetchRecursos();
+                fetchMoreRecursos();
               },
             ),
           ),
@@ -121,7 +146,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                       .toList(),
                   onChanged: (v) {
                     setState(() => selectedAnio = v);
-                    fetchRecursos();
+                    fetchMoreRecursos();
                   },
                 ),
                 DropdownButton<String>(
@@ -133,7 +158,7 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
                       .toList(),
                   onChanged: (v) {
                     setState(() => selectedMomento = v);
-                    fetchRecursos();
+                    fetchMoreRecursos();
                   },
                 ),
               ],
