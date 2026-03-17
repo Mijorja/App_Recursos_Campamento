@@ -1,7 +1,7 @@
 {
-    "name": "app_recursos_campamento",
-    "short_name": "app_recursos_campamento",
-    "start_url": ".",
+    "name": "CSP",
+    "short_name": "CSP",
+    "start_url": "/",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
