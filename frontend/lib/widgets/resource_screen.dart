@@ -7,6 +7,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../screens/detalle_recurso_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ResourceScreen extends StatelessWidget {
   final List<Recurso> recursos;
@@ -35,6 +36,18 @@ class ResourceScreen extends StatelessWidget {
     Share.share(url);
   }
 
+  // 🔹 Función para abrir PDFs, recibe context
+  Future<void> _openPdf(BuildContext context, String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No se pudo abrir el PDF")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final favoritosProvider = context.watch<FavoritosProvider>();
@@ -56,7 +69,11 @@ class ResourceScreen extends StatelessWidget {
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             elevation: 4,
             child: ListTile(
-              leading: const Icon(Icons.insert_drive_file),
+              leading: Icon(
+                recurso.archivoUrl.toLowerCase().endsWith('.pdf')
+                    ? Icons.picture_as_pdf
+                    : Icons.insert_drive_file,
+              ),
               title: Text(recurso.titulo),
               subtitle: recurso.descripcion != null ? Text(recurso.descripcion!) : null,
               trailing: Row(
@@ -79,18 +96,23 @@ class ResourceScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              // 🔹 Aquí abrimos PDFs directamente en navegador / PWA
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => DetalleRecursoScreen(recurso: recurso),
-                  ),
-                );
+                if (recurso.archivoUrl.toLowerCase().endsWith('.pdf')) {
+                  _openPdf(context, recurso.fullUrl);
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => DetalleRecursoScreen(recurso: recurso),
+                    ),
+                  );
+                }
               },
             ),
           );
         } else {
-          // 👇 Loader al final de la lista
+          // Loader al final de la lista
           return const Padding(
             padding: EdgeInsets.all(16),
             child: Center(child: CircularProgressIndicator()),
