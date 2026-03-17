@@ -47,6 +47,7 @@ class ResourceScreen extends StatelessWidget {
       );
     }
   }
+  
 
   @override
   Widget build(BuildContext context) {
