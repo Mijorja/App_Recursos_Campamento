@@ -5,7 +5,7 @@
 *.swp
 .DS_Store
 .atom/
-#.build/
+
 .buildlog/
 .history
 .svn/
@@ -30,7 +30,6 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-#/build/
 /coverage/
 
 
@@ -44,3 +43,16 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Ignorar build de Android pero NO build/web (necesario para Render)
+/build/app/
+/build/device_info_plus/
+/build/flutter_assets/
+/build/flutter_native_splash/
+/build/flutter_pdfview/
+/build/path_provider_android/
+/build/share_plus/
+/build/syncfusion_flutter_pdfviewer/
+/build/url_launcher_android/
+/build/flutter/
+#/build/
